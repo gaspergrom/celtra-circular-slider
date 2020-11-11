@@ -110,6 +110,9 @@ class Slider extends HTMLElement {
             min: parseFloat(this.getAttribute('min')) || 0,
             step: parseFloat(this.getAttribute('step')) || 1,
         };
+        this._events = {
+           change: this.getAttribute('onchange')
+        };
         let { x, y, width, height } = this.getBoundingClientRect();
         this._bounds = {
             x, y,
@@ -136,12 +139,22 @@ class Slider extends HTMLElement {
         // Getting degrees and tangens based on step value
         const stepDeg = val * 360 / range;
         const stepTan = (stepDeg - 90) / 180 * Math.PI;
-        console.log(this._params.min + val);
+
+        this.changeValue(this._params.min + val);
+        // Assign corner values if
         if (Math.abs(deg - this._corner.prev) < 3) {
             this._corner.deg = stepDeg;
             this._corner.tan = stepTan;
         }
         this._corner.prev = deg;
+    }
+
+    changeValue(value){
+        const event = new CustomEvent('change', { value });
+        this.dispatchEvent(event);
+        if(this._events.change && window[this._events.change]){
+            window[this._events.change](event)
+        }
     }
 }
 
