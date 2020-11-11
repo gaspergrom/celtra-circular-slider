@@ -122,12 +122,11 @@ class Slider extends HTMLElement {
     calculateCorner (xdif, ydif) {
         const tan = Math.atan2(ydif, xdif);
         const deg = ((tan / Math.PI * 180) + 450) % 360;
-        this._corner.tan = tan;
-        this._corner.prev = deg;
         if (Math.abs(deg - this._corner.prev) < 3) {
             this._corner.deg = deg;
+            this._corner.tan = tan;
         }
-
+        this._corner.prev = deg;
     }
 }
 
