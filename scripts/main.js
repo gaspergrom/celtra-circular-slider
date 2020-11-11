@@ -28,6 +28,10 @@ class Slider extends HTMLElement {
             this.calculateCorner(xDif, yDif);
             this.render();
         });
+        window.addEventListener('resize', () => {
+            this.initialize();
+        });
+
     }
 
     // Component detached from DOM
