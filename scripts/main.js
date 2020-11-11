@@ -1,48 +1,3 @@
-// class Slider{
-//     constructor (parent, offset, params){
-//         const el = document.getElementById('cont');
-//         this.build(el);
-//         this.degrees = 0;
-//         const slider = document.querySelector('.circular__slider');
-//         let {x, y, width, height} = slider.getBoundingClientRect();
-//         [width, height] = [width - 6, height - 6];
-//         const sliderX = x + width / 2;
-//         const sliderY = y + height / 2;
-//         const handler = document.querySelector('.circular__handler');
-//         handler.eventMoveHandling = "Disabled";
-//         handler.eventResizeHandling = "Disabled";
-//         handler.timeRangeSelectedHandling = "Disabled";
-//         handler.addEventListener('drag', (e) => {
-//             const xDif = e.clientX - sliderX;
-//             const yDif = e.clientY - sliderY;
-//             const deg =((Math.atan2(yDif, xDif)/Math.PI * 180) + 450) % 360;
-//             if(Math.abs(deg - this.previous)<3){
-//                 this.degrees = deg;
-//             }
-//             this.previous = deg;
-//             slider.style.cssText = `background-image: conic-gradient(red ${this.degrees}deg, #eee 0)`;
-//             handler.style.cssText = `top: ${Math.sin((this.degrees-90)/180*Math.PI)*height/2 + height/2 -15}px;left: ${Math.cos((this.degrees-90)/180*Math.PI)*width/2 + width/2 -15}px;`;
-//         });
-//     }
-//
-//     initializeParams(){
-//
-//     }
-//     render(){
-//
-//     }
-//     build(parent){
-//         const slider = document.createElement('div');
-//         slider.classList.add('circular__slider');
-//         const handler = document.createElement('div');
-//         handler.classList.add('circular__handler');
-//         handler.setAttribute('draggable', 'true');
-//         slider.appendChild(handler);
-//         parent.appendChild(slider);
-//         this.slider = slider;
-//     }
-// }
-
 class SliderGroup extends HTMLElement {
     constructor () {
         super();
@@ -64,19 +19,12 @@ class Slider extends HTMLElement {
     // Component attached to DOM
     connectedCallback () {
         this.build();
-        this.initializeParams();
+        this.initialize();
         this._handler.addEventListener('drag', (e) => {
             const xDif = e.clientX - this._bounds.center.x;
             const yDif = e.clientY - this._bounds.center.y;
             this.calculateCorner(xDif, yDif);
             this.render();
-//             const deg =((Math.atan2(yDif, xDif)/Math.PI * 180) + 450) % 360;
-//             if(Math.abs(deg - this.previous)<3){
-//                 this.degrees = deg;
-//             }
-//             this.previous = deg;
-//             slider.style.cssText = `background-image: conic-gradient(red ${this.degrees}deg, #eee 0)`;
-//             handler.style.cssText = `top: ${Math.sin((this.degrees-90)/180*Math.PI)*height/2 + height/2 -15}px;left: ${Math.cos((this.degrees-90)/180*Math.PI)*width/2 + width/2 -15}px;`;
         });
     }
 
@@ -85,11 +33,23 @@ class Slider extends HTMLElement {
         this._handler.removeEventListener('drag');
     }
 
+    // On attribute change
+    static get observedAttributes() {
+        return ['color', 'min', 'max', 'step', 'value'];
+    }
+    attributeChangedCallback(){
+        this.initialize();
+    }
+
+
     // Render progress and handler based on corner params
     render () {
         this.style.backgroundImage = `conic-gradient(${this._params.color} ${this._corner.deg}deg, #eee 0)`;
-        this._handler.style.top = `${Math.sin(this._corner.tan) * this._bounds.height / 2 + this._bounds.height / 2 - 15}px`;
-        this._handler.style.left = `${Math.cos(this._corner.tan) * this._bounds.width / 2 + this._bounds.width / 2 - 15}px`;
+        if(this._handler){
+            this._handler.style.top = `${Math.sin(this._corner.tan) * this._bounds.height / 2 + this._bounds.height / 2 - 15}px`;
+            this._handler.style.left = `${Math.cos(this._corner.tan) * this._bounds.width / 2 + this._bounds.width / 2 - 15}px`;
+        }
+
     }
 
     // Building component html
@@ -103,12 +63,13 @@ class Slider extends HTMLElement {
     }
 
     // Initialize default params needed for component functionality
-    initializeParams () {
+    initialize () {
         this._params = {
             color: this.getAttribute('color') || '#fff',
             max: parseFloat(this.getAttribute('max')) || 100,
             min: parseFloat(this.getAttribute('min')) || 0,
             step: parseFloat(this.getAttribute('step')) || 1,
+            value: parseFloat(this.getAttribute('value')) || parseFloat(this.getAttribute('min')) || 0,
         };
         this._events = {
            change: this.getAttribute('onchange')
@@ -124,9 +85,11 @@ class Slider extends HTMLElement {
             }
         };
         this._corner = {
-            tan: 0,
+            tan: -Math.PI/2,
             deg: 0,
-        }
+        };
+        this.calculateCornerValue(this._params.value);
+        this.render()
     }
 
     // Calculate tangens and corner in degrees
@@ -135,24 +98,31 @@ class Slider extends HTMLElement {
         const deg = ((Math.atan2(ydif, xdif) / Math.PI * 180) + 450) % 360;
         const range = this._params.max - this._params.min;
         // Getting min offset value based on max and step
-        const val = Math.round(range*deg/360/this._params.step)*this._params.step;
+        const val = Math.round(range * deg / 360 / this._params.step) * this._params.step;
         // Getting degrees and tangens based on step value
-        const stepDeg = val * 360 / range;
+        if (Math.abs(deg - this._corner.prev) < 3) {
+            this.calculateCornerValue(val);
+        }
+        this._corner.prev = deg;
+    }
+
+    // Getting degrees and tangens based on step value
+    calculateCornerValue (val) {
+        const range = this._params.max - this._params.min;
+        const stepDeg = val * 360 / range % 360;
         const stepTan = (stepDeg - 90) / 180 * Math.PI;
 
         this.changeValue(this._params.min + val);
         // Assign corner values if
-        if (Math.abs(deg - this._corner.prev) < 3) {
-            this._corner.deg = stepDeg;
-            this._corner.tan = stepTan;
-        }
-        this._corner.prev = deg;
+        this._corner.deg = stepDeg;
+        this._corner.tan = stepTan;
+
     }
 
     changeValue(value){
         const event = new CustomEvent('change', { value });
         this.dispatchEvent(event);
-        if(this._events.change && window[this._events.change]){
+        if(this._events.change && window[this._events.change] && typeof window[this._events.change] === 'function'){
             window[this._events.change](event)
         }
     }
