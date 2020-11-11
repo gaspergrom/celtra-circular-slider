@@ -87,7 +87,7 @@ class Slider extends HTMLElement {
 
     // Render progress and handler based on corner params
     render () {
-        this.style.backgroundImage = `conic-gradient(red ${this._corner.deg}deg, #eee 0)`;
+        this.style.backgroundImage = `conic-gradient(${this._params.color} ${this._corner.deg}deg, #eee 0)`;
         this._handler.style.top = `${Math.sin(this._corner.tan) * this._bounds.height / 2 + this._bounds.height / 2 - 15}px`;
         this._handler.style.left = `${Math.cos(this._corner.tan) * this._bounds.width / 2 + this._bounds.width / 2 - 15}px`;
     }
@@ -104,9 +104,17 @@ class Slider extends HTMLElement {
 
     // Initialize default params needed for component functionality
     initializeParams () {
+        this._params = {
+            color: this.getAttribute('color') || '#fff',
+            max: parseFloat(this.getAttribute('max')) || 100,
+            min: parseFloat(this.getAttribute('min')) || 0,
+            step: parseFloat(this.getAttribute('step')) || 1,
+        };
         let { x, y, width, height } = this.getBoundingClientRect();
         this._bounds = {
-            x, y, width, height,
+            x, y,
+            width: width - 6,
+            height: height - 6,
             center: {
                 x: x + width / 2,
                 y: y + height / 2
@@ -120,11 +128,18 @@ class Slider extends HTMLElement {
 
     // Calculate tangens and corner in degrees
     calculateCorner (xdif, ydif) {
-        const tan = Math.atan2(ydif, xdif);
-        const deg = ((tan / Math.PI * 180) + 450) % 360;
+        // Getting degrees of current position
+        const deg = ((Math.atan2(ydif, xdif) / Math.PI * 180) + 450) % 360;
+        const range = this._params.max - this._params.min;
+        // Getting min offset value based on max and step
+        const val = Math.round(range*deg/360/this._params.step)*this._params.step;
+        // Getting degrees and tangens based on step value
+        const stepDeg = val * 360 / range;
+        const stepTan = (stepDeg - 90) / 180 * Math.PI;
+        console.log(this._params.min + val);
         if (Math.abs(deg - this._corner.prev) < 3) {
-            this._corner.deg = deg;
-            this._corner.tan = tan;
+            this._corner.deg = stepDeg;
+            this._corner.tan = stepTan;
         }
         this._corner.prev = deg;
     }
