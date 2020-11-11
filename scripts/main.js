@@ -5,8 +5,10 @@ class SliderGroup extends HTMLElement {
 
     connectedCallback () {
         this.classList.add('circular');
-        this._children = [...this.childNodes].filter((child) => {
+        this._children = [...this.childNodes].filter((child, ci) => {
             return child.tagName === 'CELTRA-SLIDER';
+        }).forEach((slider, si) => {
+            slider.style.top = slider.style.bottom = slider.style.left = slider.style.right = `${si*40}px`;
         });
     }
 }
@@ -34,13 +36,19 @@ class Slider extends HTMLElement {
     }
 
     // On attribute change
-    static get observedAttributes() {
-        return ['color', 'min', 'max', 'step', 'value'];
-    }
     attributeChangedCallback(){
         this.initialize();
     }
 
+    static get observedAttributes() {
+        return [
+            'color',
+            'min',
+            'max',
+            'step',
+            'value',
+        ];
+    }
 
     // Render progress and handler based on corner params
     render () {
