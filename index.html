@@ -9,10 +9,38 @@
 <body>
 <div style="padding: 80px;">
     <celtra-slider-group>
-        <celtra-slider color="blue" step="1" min="50" max="60" value="53"></celtra-slider>
-        <celtra-slider color="red" step="1" min="50" max="60" value="53"></celtra-slider>
+        <celtra-slider color="blue" step="0.1" min="50" max="60" value="53" @change="blueChanged"></celtra-slider>
+        <celtra-slider color="red" step="1" min="40" max="60" value="50" id="redslider"></celtra-slider>
     </celtra-slider-group>
+    <div style="margin-top: 30px">
+        <celtra-slider color="green" step="0" min="0" max="60" value="50" radius="270" @change="greenChanged"></celtra-slider>
+    </div>
+    <div style="margin-top: 30px">
+        <h1>Data</h1>
+        <p>Blue: <span data-result="blue"></span></p>
+        <p>Red: <span data-result="red"></span></p>
+        <p>Green: <span data-result="green"></span></p>
+    </div>
 </div>
+<script>
+    // With function
+    const resultsBlue = document.querySelector('[data-result="blue"]');
+    const resultsGreen = document.querySelector('[data-result="green"]');
+    function blueChanged (e) {
+        resultsBlue.innerText = e.detail.value;
+    }
+    function greenChanged (e) {
+        resultsGreen.innerText = e.detail.value;
+    }
+
+    // With listener
+    const sliderRed = document.getElementById('redslider');
+    const resultsRed = document.querySelector('[data-result="red"]');
+    sliderRed.addEventListener('change', (e) => {
+        resultsRed.innerText = e.detail.value;
+    })
+</script>
 <script src="scripts/main.js"></script>
+
 </body>
 </html>
