@@ -118,7 +118,7 @@ class Slider extends HTMLElement {
     // Render progress and handler based on corner params
     render () {
         if (this.valid) {
-            this.style.backgroundImage = `conic-gradient(${this._params.color} ${this._corner.deg || 360}deg, #eee 0)`;
+            this.style.backgroundImage = `conic-gradient(${this._params.color} ${this._corner.deg || this._corner.radius}deg, #eee 0)`;
             if (this._handler) {
                 this._handler.style.top = `${(Math.sin(this._corner.tan) + 1) * this._bounds.height / 2 - 15}px`;
                 this._handler.style.left = `${(Math.cos(this._corner.tan) + 1) * this._bounds.width / 2 - 15}px`;
@@ -141,11 +141,11 @@ class Slider extends HTMLElement {
     initialize () {
         // Initialize attributes
         this._params = this._params || {};
-        this._params.color = this.getAttribute('color') || '#fff';
-        this._params.max = parseFloat(this.getAttribute('max')) || 100;
-        this._params.min = parseFloat(this.getAttribute('min')) || 0;
-        this._params.step = parseFloat(this.getAttribute('step')) || 1;
-        this._params.radius = parseFloat(this.getAttribute('radius')) || 360;
+        this._params.color = this.getAttribute('color') || 'red';
+        this._params.max = this.hasAttribute('max') ? parseFloat(this.getAttribute('max')) : 100;
+        this._params.min = this.hasAttribute('min') ? parseFloat(this.getAttribute('min')) : 0;
+        this._params.step = this.hasAttribute('step') ? parseFloat(this.getAttribute('step')) : 1;
+        this._params.radius = this.hasAttribute('radius') ? parseFloat(this.getAttribute('radius')) : 360;
 
         // Initialize events
         this._events = {
