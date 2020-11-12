@@ -4,6 +4,14 @@ gasper.grom@gmail.com
 
 Circular slider is created as native web component. It can be used on desktop devices as well as mobile devices.
 
+## Support
+Chrome 69+  
+Safari 12.1+  
+Edge 79+  
+Firefox 83+  
+iOS Safari 12.2+  
+Chrome Android 86+  
+
 ## Setup
 To be able to use this component you need to fulfill next steps:
 - include styles which can be found in  **/styles/main.css**
@@ -39,8 +47,7 @@ Options are entered as attributes to the *<celtra-slider>* tag.
 #### color
 Color attribute defines color of current slider. 
 
-value:  *color name, hex value, rgb value...*
-
+value:  *color name, hex value, rgb value...*  
 default:  *red*
 ```HTML
     <celtra-slider color="red"></celtra-slider>
@@ -52,8 +59,7 @@ default:  *red*
 Value attribute defines initial value of slider.
 Value has to be between minimum 
 
-value:  *float*
-
+value:  *float*  
 default:  *value of min attribute or 0*
 ```HTML
     <celtra-slider value="15"></celtra-slider>
@@ -64,8 +70,7 @@ default:  *value of min attribute or 0*
 Min attribute defines minimum value of slider.
 Value shouldn't be greater than maximum value.
 
-value:  *float*
-
+value:  *float*  
 default: *0*
 ```HTML
     <celtra-slider min="15"></celtra-slider>
@@ -76,8 +81,7 @@ default: *0*
 Max attribute defines maximum value of slider.
 Value shouldn't be lower than min value.
 
-value:  *float*
-
+value:  *float*  
 default: *100*
 ```HTML
     <celtra-slider max="79"></celtra-slider>
@@ -88,8 +92,7 @@ default: *100*
 Step attribute defines step of slider.
 Value shouldnt be 0 or lower & shouldn't be higher than range between min and max value.
 
-value:  *float*
-
+value:  *float*  
 default: *1*
 ```HTML
     <celtra-slider min="2"></celtra-slider>
@@ -102,8 +105,7 @@ Value should be between 1 and 360.
 
 Example: if value is 270, then when there will be maximum value the handle will be at 270 degrees.
 
-value:  *float*
-
+value:  *float*  
 default: *360*
 ```HTML
     <celtra-slider radius="270"></celtra-slider>

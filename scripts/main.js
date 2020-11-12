@@ -112,13 +112,12 @@ class Slider extends HTMLElement {
             console.error('Radius value should be between 1 and 360');
             return false;
         }
-        return true;
+        return false;
     }
 
     // Render progress and handler based on corner params
     render () {
         if (this.valid) {
-            this.style.backgroundImage = `conic-gradient(${this._params.color} ${this._corner.deg || this._corner.radius}deg, #eee 0)`;
             if (this._handler) {
                 this._handler.style.top = `${(Math.sin(this._corner.tan) + 1) * this._bounds.height / 2 - 15}px`;
                 this._handler.style.left = `${(Math.cos(this._corner.tan) + 1) * this._bounds.width / 2 - 15}px`;
@@ -135,6 +134,15 @@ class Slider extends HTMLElement {
         handler.setAttribute('draggable', 'true');
         this.appendChild(handler);
         this._handler = handler;
+
+        const leftHalf = document.createElement('div');
+        leftHalf.classList.add('circular__slider__half');
+        leftHalf.classList.add('circular__slider__half--left');
+        const rightHalf = document.createElement('div');
+        rightHalf.classList.add('circular__slider__half');
+        rightHalf.classList.add('circular__slider__half--right');
+        this.appendChild(leftHalf);
+        this.appendChild(rightHalf);
     }
 
     // Initialize default params needed for component functionality
