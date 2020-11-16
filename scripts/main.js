@@ -27,7 +27,7 @@ class Slider extends HTMLElement {
         this.build();
         this.initializeValue();
         this.initialize();
-
+        this.renderInitial();
         // Drag event for desktop devices
         this._handler.addEventListener('drag', (e) => {
             this.calculateCorner(e.pageX, e.pageY);
@@ -141,7 +141,6 @@ class Slider extends HTMLElement {
             marker.style.transform = `rotate(${(this._params.radius / markerCount) * i}deg)`;
             this.appendChild(marker);
         }
-
     }
 
     // Building component html
@@ -185,9 +184,7 @@ class Slider extends HTMLElement {
             tan: -Math.PI / 2,
             deg: 0,
         };
-
         this.calculateCornerByValue(this._params.value - this._params.min);
-        this.renderInitial();
         this.render();
     }
 
@@ -239,6 +236,7 @@ class Slider extends HTMLElement {
 
     changeValue (value) {
         if (this.valid) {
+            this._params.value = value;
             const event = new CustomEvent('change', { detail: { value } });
             this.dispatchEvent(event);
             if (this._events.change && this._events.change in window && typeof window[this._events.change] === 'function') {
