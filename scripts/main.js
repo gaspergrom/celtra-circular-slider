@@ -30,20 +30,20 @@ class Slider extends HTMLElement {
 
         // Drag event for desktop devices
         this._handler.addEventListener('drag', (e) => {
-            this.calculateCorner(e.clientX, e.clientY);
+            this.calculateCorner(e.pageX, e.pageY);
             this.render();
         });
 
         // touch event for mobile devices
         this._handler.addEventListener('touchmove', (e) => {
             const touch = e && e.changedTouches && e.changedTouches.length && e.changedTouches[0];
-            this.calculateCorner(touch.clientX, touch.clientY);
+            this.calculateCorner(touch.pageX, touch.pageY);
             this.render();
         }, false);
 
         this.addEventListener('click', (e) => {
-            this._corner.prev = this.clientCoordsToDeg(e.clientX, e.clientY);
-            this.calculateCorner(e.clientX, e.clientY);
+            this._corner.prev = this.pageCoordsToDeg(e.pageX, e.pageY);
+            this.calculateCorner(e.pageX, e.pageY);
             this.render();
         });
 
@@ -118,7 +118,13 @@ class Slider extends HTMLElement {
     // Render progress and handler based on corner params
     render () {
         if (this.valid) {
-            this.style.backgroundImage = `conic-gradient(${this._params.color} ${this._corner.deg || this._corner.radius || 360}deg, #eee 0) `;
+            const degrees = this._corner.deg || this._params.radius || 360;
+            if(this._params.radius < 360) {
+                this.style.backgroundImage = `conic-gradient(${this._params.color} ${degrees}deg, #eee ${degrees}deg, #eee ${this._params.radius}deg, white ${this._params.radius}deg)`;
+            }
+            else{
+                this.style.backgroundImage = `conic-gradient(${this._params.color} ${degrees}deg, #eee 0)`;
+            }
             if (this._handler) {
                 this._handler.style.top = `${(Math.sin(this._corner.tan) + 1) * this._bounds.height / 2 - 15}px`;
                 this._handler.style.left = `${(Math.cos(this._corner.tan) + 1) * this._bounds.width / 2 - 15}px`;
@@ -192,16 +198,16 @@ class Slider extends HTMLElement {
         this.changeValue(this._params.value);
     }
 
-    clientCoordsToDeg (clientX, clientY) {
-        const xdif = clientX - this._bounds.center.x;
-        const ydif = clientY - this._bounds.center.y;
+    pageCoordsToDeg (pageX, pageY) {
+        const xdif = pageX - this._bounds.center.x;
+        const ydif = pageY - this._bounds.center.y;
         // Getting degrees of current position
         return ((Math.atan2(ydif, xdif) / Math.PI * 180) + 450) % 360;
     }
 
     // Calculate tangens and corner in degrees
-    calculateCorner (clientX, clientY) {
-        const deg = this.clientCoordsToDeg(clientX, clientY);
+    calculateCorner (pageX, pageY) {
+        const deg = this.pageCoordsToDeg(pageX, pageY);
         const range = this._params.max - this._params.min;
         // Getting min offset value based on max and step
         const val = Math.round(range * deg / this._params.radius / this._params.step) * this._params.step;
