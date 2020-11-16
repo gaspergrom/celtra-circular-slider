@@ -135,10 +135,13 @@ class Slider extends HTMLElement {
     renderInitial(){
         this._markers = [];
         const markerCount = Math.floor((this._params.max - this._params.min) / this._params.step) + 1;
-        for(let i = 1; i <= markerCount; i++){
+        for(let i = 0; i <= markerCount; i++){
             const marker = document.createElement('div');
             marker.classList.add('circular__marker');
             marker.style.transform = `rotate(${(this._params.radius / markerCount) * i}deg)`;
+            if(this._params.radius < 360 && (i === 0 || i === markerCount)){
+                marker.classList.add('main');
+            }
             this.appendChild(marker);
         }
     }

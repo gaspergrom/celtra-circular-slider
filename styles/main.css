@@ -53,6 +53,13 @@
     width: 2px;
     background: linear-gradient(to top, transparent 0%, transparent 50%, white 50%, white 100%);
     left: calc(50% - 1px);
+    top: 0;
     transform: rotate(35deg);
     z-index: -1
+}
+.circular__marker.main{
+    background: linear-gradient(to top, transparent 0%, transparent 50%, black 50%, black 100%);
+    height: calc(100% + 10px);
+    top: -5px;
+
 }
