@@ -118,7 +118,7 @@ class Slider extends HTMLElement {
     // Render progress and handler based on corner params
     render () {
         if (this.valid) {
-            this.style.backgroundImage = `conic-gradient(${this._params.color} ${this._corner.deg || this._corner.radius}deg, #eee 0)`;
+            this.style.backgroundImage = `conic-gradient(${this._params.color} ${this._corner.deg || this._corner.radius || 360}deg, #eee 0) `;
             if (this._handler) {
                 this._handler.style.top = `${(Math.sin(this._corner.tan) + 1) * this._bounds.height / 2 - 15}px`;
                 this._handler.style.left = `${(Math.cos(this._corner.tan) + 1) * this._bounds.width / 2 - 15}px`;
