@@ -126,6 +126,18 @@ class Slider extends HTMLElement {
         }
     }
 
+    renderInitial(){
+        this._markers = [];
+        const markerCount = Math.floor((this._params.max - this._params.min) / this._params.step) + 1;
+        for(let i = 1; i <= markerCount; i++){
+            const marker = document.createElement('div');
+            marker.classList.add('circular__marker');
+            marker.style.transform = `rotate(${(this._params.radius / markerCount) * i}deg)`;
+            this.appendChild(marker);
+        }
+
+    }
+
     // Building component html
     build () {
         this.classList.add('circular__slider');
@@ -135,15 +147,6 @@ class Slider extends HTMLElement {
         handler.setAttribute('draggable', 'true');
         this.appendChild(handler);
         this._handler = handler;
-
-        const leftHalf = document.createElement('div');
-        leftHalf.classList.add('circular__slider__half');
-        leftHalf.classList.add('circular__slider__half--left');
-        const rightHalf = document.createElement('div');
-        rightHalf.classList.add('circular__slider__half');
-        rightHalf.classList.add('circular__slider__half--right');
-        this.appendChild(leftHalf);
-        this.appendChild(rightHalf);
     }
 
     // Initialize default params needed for component functionality
@@ -178,6 +181,7 @@ class Slider extends HTMLElement {
         };
 
         this.calculateCornerByValue(this._params.value - this._params.min);
+        this.renderInitial();
         this.render();
     }
 

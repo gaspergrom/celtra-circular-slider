@@ -46,3 +46,12 @@
     border: solid 2px #ddd;
     cursor: pointer;
 }
+.circular__marker{
+    position: absolute;
+    height: 100%;
+    width: 2px;
+    background: linear-gradient(to top, transparent 0%, transparent 50%, white 50%, white 100%);
+    left: calc(50% - 1px);
+    transform: rotate(35deg);
+    z-index: -1
+}
