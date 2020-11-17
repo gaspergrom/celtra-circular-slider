@@ -50,7 +50,6 @@ class Slider extends HTMLElement {
             // Setup event listeners
             // Drag event for desktop devices
             this._handler.addEventListener('drag', (e) => {
-                console.log(e.pageX, e.pageY)
                 this.updateValue(e.pageX, e.pageY);
             });
 
@@ -67,11 +66,6 @@ class Slider extends HTMLElement {
 
             // Adjust layout on window resize
             window.addEventListener('resize', () => {
-                this.initializeBounds();
-                this.calculateCornerByValue(this._params.value);
-                this.render();
-            });
-            window.addEventListener('orientationchange', () => {
                 this.initializeBounds();
                 this.calculateCornerByValue(this._params.value);
                 this.render();
@@ -202,6 +196,8 @@ class Slider extends HTMLElement {
             change: this.getAttribute('@change')
         };
     }
+
+    // Initialize component bounds for layout purposes
     initializeBounds(){
         // Set variables which are used for layouting
         let { x, y, width, height } = this.getBoundingClientRect();
@@ -209,7 +205,7 @@ class Slider extends HTMLElement {
         // getting page offset from client offset
         y += window.pageYOffset || (document.documentElement || document.body.parentNode || document.body).scrollTop;
         x += window.pageXOffset || (document.documentElement || document.body.parentNode || document.body).scrollLeft;
-        
+
         this._bounds = {
             x, y,
             width: width - 6,
@@ -230,6 +226,7 @@ class Slider extends HTMLElement {
         this._params.value = parseFloat(this.getAttribute('value')) || parseFloat(this.getAttribute('min')) || 0;
     }
 
+    // Transform page coordinates into corner
     pageCoordsToDeg (pageX, pageY) {
         // Getting axis differences
         const xdif = pageX - this._bounds.center.x;
@@ -276,6 +273,7 @@ class Slider extends HTMLElement {
         this._corner.tan = stepTan;
     }
 
+    // Events and functionality for value change
     changeValue (value) {
         // Set value attribute
         this.setAttribute('value', value);
