@@ -20,69 +20,81 @@ class SliderGroup extends HTMLElement {
 class Slider extends HTMLElement {
     constructor () {
         super();
+        this._loaded = false;
     }
 
     // Component attached to DOM
     connectedCallback () {
-        this.build();
+        this._params = this._params || {};
+
+        // Initialize value and attributes
         this.initializeValue();
-        this.initialize();
-        this.renderInitial();
-        // Drag event for desktop devices
-        this._handler.addEventListener('drag', (e) => {
-            this.calculateCorner(e.pageX, e.pageY);
+        this.initializeAttributes();
+
+        // Build component if params are valid
+        if(this.valid){
+            // Build component
+            this.build();
+
+            // Initialize bounds and center
+            this.initializeBounds();
+
+            // trigger initial value event
+            this.changeValue(this._params.value);
+
+            // Render slider by initial value
+            this.calculateCornerByValue(this._params.value);
             this.render();
-        });
+            this._loaded = true;
 
-        // touch event for mobile devices
-        this._handler.addEventListener('touchmove', (e) => {
-            const touch = e && e.changedTouches && e.changedTouches.length && e.changedTouches[0];
-            this.calculateCorner(touch.pageX, touch.pageY);
-            this.render();
-        }, false);
+            // Setup event listeners
+            // Drag event for desktop devices
+            this._handler.addEventListener('drag', (e) => {
+                this.updateValue(e.pageX, e.pageY);
+            });
 
-        this.addEventListener('click', (e) => {
-            this._corner.prev = this.pageCoordsToDeg(e.pageX, e.pageY);
-            this.calculateCorner(e.pageX, e.pageY);
-            this.render();
-        });
+            // touch event for mobile devices
+            this._handler.addEventListener('touchmove', (e) => {
+                const touch = e && e.changedTouches && e.changedTouches.length && e.changedTouches[0];
+                this.updateValue(touch.pageX, touch.pageY);
+            }, false);
 
-        // Disable scroll on mobile devices when touching
-        // this._handler.addEventListener('touchstart', function (e) {
-        //     document.documentElement.style.overflow = 'hidden';
-        // });
-        // this._handler.addEventListener('touchend', function (e) {
-        //     document.documentElement.style.overflow = 'auto';
-        // });
+            this.addEventListener('click', (e) => {
+                this._corner.prev = this.pageCoordsToDeg(e.pageX, e.pageY);
+                this.updateValue(e.pageX, e.pageY, false);
+            });
 
-        // Adjust layout on window resize
-        window.addEventListener('resize', () => {
-            this.initialize();
-        });
-
-
+            // Adjust layout on window resize
+            window.addEventListener('resize', () => {
+                this.initializeBounds();
+                this.calculateCornerByValue(this._params.value);
+                this.render();
+            });
+        }
     }
 
-    // Component detached from DOM
+    // Component detached from DOM - remove event listeners
     disconnectedCallback () {
         this._handler.removeEventListener('drag');
         this._handler.removeEventListener('touchmove');
-        this._handler.removeEventListener('touchstart');
-        this._handler.removeEventListener('touchend');
         window.removeEventListener('resize');
     }
 
     // // On attribute change
     attributeChangedCallback () {
-        this.initialize();
+        // Preventing to be triggered before component initialization
+        if(this._loaded){
+            // Update attribute values and rerender
+            this.initializeValue();
+            if(this.valid){
+                this.calculateCornerByValue(this._params.value);
+                this.render();
+            }
+        }
     }
 
     static get observedAttributes () {
         return [
-            'color',
-            'min',
-            'max',
-            'step',
             'value',
         ];
     }
@@ -111,50 +123,66 @@ class Slider extends HTMLElement {
         return true;
     }
 
-    // Render progress and handler based on corner params
-    render () {
-        if (this.valid) {
-            const degrees = this._corner.deg || this._params.radius || 360;
-            if(this._params.radius < 360) {
-                this.style.backgroundImage = `conic-gradient(${this._params.color} ${degrees}deg, #eee ${degrees}deg, #eee ${this._params.radius}deg, white ${this._params.radius}deg)`;
-            }
-            else{
-                this.style.backgroundImage = `conic-gradient(${this._params.color} ${degrees}deg, #eee 0)`;
-            }
-            if (this._handler) {
-                this._handler.style.top = `${(Math.sin(this._corner.tan) + 1) * this._bounds.height / 2 - 15}px`;
-                this._handler.style.left = `${(Math.cos(this._corner.tan) + 1) * this._bounds.width / 2 - 15}px`;
-            }
-        }
-    }
+    // Building component html
+    build () {
+        this.classList.add('circular__slider');
 
-    renderInitial(){
-        this._markers = [];
-        const markerCount = Math.floor((this._params.max - this._params.min) / this._params.step) + 1;
-        for(let i = 0; i <= markerCount; i++){
+        // Add handler
+        const handler = document.createElement('div');
+        handler.classList.add('circular__handler');
+        handler.setAttribute('draggable', 'true');
+        this.appendChild(handler);
+        this._handler = handler;
+
+        // Build markers
+        const markerCount = Math.floor((this._params.max - this._params.min) / this._params.step);
+        for (let i = 0; i <= markerCount; i++) {
             const marker = document.createElement('div');
             marker.classList.add('circular__marker');
             marker.style.transform = `rotate(${(this._params.radius / markerCount) * i}deg)`;
-            if(this._params.radius < 360 && (i === 0 || i === markerCount)){
+            if ((i === 0 || i === markerCount)) {
                 marker.classList.add('main');
             }
             this.appendChild(marker);
         }
     }
 
-    // Building component html
-    build () {
-        this.classList.add('circular__slider');
+    // Render progress and handler based on corner params
+    render () {
+        // Update line
+        if (this._params.radius < 360) {
+            this.style.backgroundImage = `conic-gradient(${this._params.color} ${this._corner.deg}deg, #eee ${this._corner.deg}deg, #eee ${this._params.radius}deg, white ${this._params.radius}deg)`;
+        }
+        else {
+            this.style.backgroundImage = `conic-gradient(${this._params.color} ${this._corner.deg}deg, #eee 0)`;
+        }
 
-        const handler = document.createElement('div');
-        handler.classList.add('circular__handler');
-        handler.setAttribute('draggable', 'true');
-        this.appendChild(handler);
-        this._handler = handler;
+        // Update handler position
+        if (this._handler) {
+            this._handler.style.top = `${(Math.sin(this._corner.tan) + 1) * this._bounds.height / 2 - 15}px`;
+            this._handler.style.left = `${(Math.cos(this._corner.tan) + 1) * this._bounds.width / 2 - 15}px`;
+        }
+    }
+
+    updateValue (pageX, pageY, checkLimit = true) {
+        if (this.valid) {
+            const oldValue = this._params.value;
+            const value = this.calculateValueFromPosition(pageX, pageY);
+            if (oldValue !== value) {
+                // disable rendering for jumpink from minimum to max value
+                if (checkLimit && Math.abs(oldValue - value) > (this._params.max - this._params.min) * 0.25) {
+                    return false;
+                }
+                this._params.value = value;
+                this.calculateCornerByValue(value);
+                this.changeValue(value);
+                this.render();
+            }
+        }
     }
 
     // Initialize default params needed for component functionality
-    initialize () {
+    initializeAttributes () {
         // Initialize attributes
         this._params = this._params || {};
         this._params.color = this.getAttribute('color') || 'red';
@@ -167,7 +195,8 @@ class Slider extends HTMLElement {
         this._events = {
             change: this.getAttribute('@change')
         };
-
+    }
+    initializeBounds(){
         // Set variables which are used for layouting
         let { x, y, width, height } = this.getBoundingClientRect();
         this._bounds = {
@@ -183,64 +212,70 @@ class Slider extends HTMLElement {
             tan: -Math.PI / 2,
             deg: 0,
         };
-        this.calculateCornerByValue(this._params.value - this._params.min);
-        this.render();
     }
 
     // Initialize value attribute
     initializeValue () {
-        this._params = this._params || {};
         this._params.value = parseFloat(this.getAttribute('value')) || parseFloat(this.getAttribute('min')) || 0;
-        this.changeValue(this._params.value);
     }
 
     pageCoordsToDeg (pageX, pageY) {
+        // Getting axis differences
         const xdif = pageX - this._bounds.center.x;
         const ydif = pageY - this._bounds.center.y;
-        // Getting degrees of current position
+        // Getting degrees of current cursor position from center of the slider
         return ((Math.atan2(ydif, xdif) / Math.PI * 180) + 450) % 360;
     }
 
     // Calculate tangens and corner in degrees
-    calculateCorner (pageX, pageY) {
+    calculateValueFromPosition (pageX, pageY) {
+        // Getting coordinates from cursor position
         const deg = this.pageCoordsToDeg(pageX, pageY);
         const range = this._params.max - this._params.min;
-        // Getting min offset value based on max and step
-        const val = Math.round(range * deg / this._params.radius / this._params.step) * this._params.step;
+
+        const offset = Math.round(range * deg / this._params.radius / this._params.step) * this._params.step;
+        // Getting value based on slider range and step
+        const value = this._params.min + offset;
 
         // Preventing jumps which are occured by drag event
         if (Math.abs(deg - this._corner.prev) < 3) {
-            this.calculateCornerByValue(val);
+            // Preventing value to be out of range if slider has radius
+            if (value >= this._params.min && value <= this._params.max) {
+                return value;
+            }
         }
         this._corner.prev = deg;
+        return this._params.value;
     }
 
     // Getting degrees and tangens based on step value
-    calculateCornerByValue (val) {
-        if(this.valid){
-            const range = this._params.max - this._params.min + this._params.step;
-            const stepDeg = (val + this._params.step) * this._params.radius / range % 360;
-            const stepTan = (stepDeg - 90) / 180 * Math.PI;
-            const value = this._params.min + val;
+    calculateCornerByValue (value) {
+        const offset = value - this._params.min;
+        const range = this._params.max - this._params.min;
+        // Calculate corners for value
+        let stepDeg = (offset) * this._params.radius / range % 360;
+        const stepTan = (stepDeg - 90) / 180 * Math.PI;
 
-            // Assign corner values
-            if (value >= this._params.min && value <= this._params.max) {
-                this._corner.deg = stepDeg;
-                this._corner.tan = stepTan;
-                this.changeValue(this._params.min + val);
-            }
+        // Add support for max value
+        if (!stepDeg && value === this._params.max) {
+            stepDeg = 360;
         }
-
+        // Assign corner values
+        this._corner.deg = stepDeg;
+        this._corner.tan = stepTan;
     }
 
     changeValue (value) {
-        if (this.valid) {
-            this._params.value = value;
-            const event = new CustomEvent('change', { detail: { value } });
-            this.dispatchEvent(event);
-            if (this._events.change && this._events.change in window && typeof window[this._events.change] === 'function') {
-                window[this._events.change](event)
-            }
+        // Set value attribute
+        this.setAttribute('value', value);
+
+        // Emit event
+        const event = new CustomEvent('change', { detail: { value } });
+        this.dispatchEvent(event);
+
+        // Trigger function if there is events parameter
+        if (this._events.change && this._events.change in window && typeof window[this._events.change] === 'function') {
+            window[this._events.change](event)
         }
     }
 }
