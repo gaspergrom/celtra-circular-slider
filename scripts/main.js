@@ -203,8 +203,8 @@ class Slider extends HTMLElement {
         let { x, y, width, height } = this.getBoundingClientRect();
 
         // getting page offset from client offset
-        y += window.pageYOffset || (document.documentElement || document.body.parentNode || document.body).scrollTop;
-        x += window.pageXOffset || (document.documentElement || document.body.parentNode || document.body).scrollLeft;
+        y += window.pageYOffset;
+        x += window.pageXOffset;
 
         this._bounds = {
             x, y,
