@@ -50,6 +50,7 @@ class Slider extends HTMLElement {
             // Setup event listeners
             // Drag event for desktop devices
             this._handler.addEventListener('drag', (e) => {
+                console.log(e.pageX, e.pageY)
                 this.updateValue(e.pageX, e.pageY);
             });
 
@@ -66,6 +67,11 @@ class Slider extends HTMLElement {
 
             // Adjust layout on window resize
             window.addEventListener('resize', () => {
+                this.initializeBounds();
+                this.calculateCornerByValue(this._params.value);
+                this.render();
+            });
+            window.addEventListener('orientationchange', () => {
                 this.initializeBounds();
                 this.calculateCornerByValue(this._params.value);
                 this.render();
@@ -170,7 +176,7 @@ class Slider extends HTMLElement {
             const value = this.calculateValueFromPosition(pageX, pageY);
             if (oldValue !== value) {
                 // disable rendering for jumpink from minimum to max value
-                if (checkLimit && Math.abs(oldValue - value) > (this._params.max - this._params.min) * 0.25) {
+                if (checkLimit && Math.abs(oldValue - value) > (this._params.max - this._params.min) * 0.5) {
                     return false;
                 }
                 this._params.value = value;
@@ -199,6 +205,11 @@ class Slider extends HTMLElement {
     initializeBounds(){
         // Set variables which are used for layouting
         let { x, y, width, height } = this.getBoundingClientRect();
+
+        // getting page offset from client offset
+        y += window.pageYOffset || (document.documentElement || document.body.parentNode || document.body).scrollTop;
+        x += window.pageXOffset || (document.documentElement || document.body.parentNode || document.body).scrollLeft;
+        
         this._bounds = {
             x, y,
             width: width - 6,
