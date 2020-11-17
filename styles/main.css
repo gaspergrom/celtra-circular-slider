@@ -46,6 +46,7 @@
     border-radius: 50%;
     border: solid 2px #ddd;
     cursor: pointer;
+    touch-action: none;
 }
 .circular__marker{
     position: absolute;
@@ -55,7 +56,7 @@
     left: calc(50% - 1px);
     top: 0;
     transform: rotate(35deg);
-    z-index: -1
+    z-index: -1;
 }
 .circular__marker.main{
     background: linear-gradient(to top, transparent 0%, transparent 50%, black 50%, black 100%);

@@ -48,12 +48,12 @@ class Slider extends HTMLElement {
         });
 
         // Disable scroll on mobile devices when touching
-        this._handler.addEventListener('touchstart', function (e) {
-            document.documentElement.style.overflow = 'hidden';
-        });
-        this._handler.addEventListener('touchend', function (e) {
-            document.documentElement.style.overflow = 'auto';
-        });
+        // this._handler.addEventListener('touchstart', function (e) {
+        //     document.documentElement.style.overflow = 'hidden';
+        // });
+        // this._handler.addEventListener('touchend', function (e) {
+        //     document.documentElement.style.overflow = 'auto';
+        // });
 
         // Adjust layout on window resize
         window.addEventListener('resize', () => {
@@ -94,10 +94,6 @@ class Slider extends HTMLElement {
         }
         if (this._params.step > (this._params.max - this._params.min)) {
             console.error('Step shouldnt be greater than slider range');
-            return false;
-        }
-        if (this._params.step <= 0) {
-            console.error('Step shouldnt be less or equal 0');
             return false;
         }
         if (this._params.step <= 0) {
